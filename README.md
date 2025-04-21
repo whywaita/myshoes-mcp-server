@@ -1,0 +1,1 @@
+# myshoes-mcp-server
