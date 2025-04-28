@@ -28,3 +28,7 @@ go-mod: ## Update go.mod and go.sum
 .PHONY: go-test
 go-test: ## Exec test
 	go test -ldflags="$(BUILD_LDFLAGS)" -cover ./...
+
+.PHONY: docker-build
+docker-build: bin/myshoes-mcp-server ## Build docker image
+	docker build -t myshoes-mcp-server:latest .
