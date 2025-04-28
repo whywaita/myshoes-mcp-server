@@ -38,6 +38,5 @@ changelog:
       - "^test:"
 
 release:
-  draft: true
   prerelease: auto
-  name_template: "myshoes MCP Server {{.Version}}"
+  name_template: "myshoes-mcp-server {{.Version}}"
