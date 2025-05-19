@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/goccy/go-json v0.10.5
-	github.com/mark3labs/mcp-go v0.25.0
+	github.com/mark3labs/mcp-go v0.28.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/whywaita/myshoes v1.18.1
