@@ -9,8 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/goccy/go-json"
 	"github.com/spf13/cobra"
@@ -111,23 +110,30 @@ func runStdioServer(cfg runConfig) error {
 		logger: cfg.logger,
 		client: myshoesClient,
 	}
-	myshoesServer := server.NewMCPServer(
-		"myshoes-mcp-server",
-		"1.0.0",
-	)
-	tool := mcp.NewTool("list_target",
-		mcp.WithDescription("List target from myshoes API"),
-	)
-	myshoesServer.AddTool(tool, mms.listTargetHandler)
 
-	if err := server.ServeStdio(myshoesServer); err != nil {
-		return fmt.Errorf("failed to serve stdio: %w", err)
+	// Create MCP server using the official SDK
+	myshoesServer := mcp.NewServer("myshoes-mcp-server", "1.0.0", nil)
+
+	// Add the list_target tool
+	myshoesServer.AddTools(
+		mcp.NewServerTool("list_target", "List target from myshoes API", mms.listTargetHandler),
+	)
+
+	// Start stdio transport
+	var transport mcp.Transport
+	transport = mcp.NewStdioTransport()
+	if cfg.logCommands {
+		transport = mcp.NewLoggingTransport(transport, os.Stderr)
 	}
 
-	return nil
+	// Run the server
+	return myshoesServer.Run(context.Background(), transport)
 }
 
-func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+// ListTargetArgs defines the input arguments for list_target tool (empty in this case)
+type ListTargetArgs struct{}
+
+func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[ListTargetArgs]) (*mcp.CallToolResultFor[struct{}], error) {
 	targets, err := mms.client.ListTarget(ctx)
 	if err != nil {
 		mms.logger.Warn("failed to list targets", slog.String("error", err.Error()))
@@ -140,7 +146,14 @@ func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req mcp.CallT
 		return nil, fmt.Errorf("failed to marshal targets: %w", err)
 	}
 
-	return mcp.NewToolResultText(string(jb)), nil
+	// Return the result with text content
+	return &mcp.CallToolResultFor[struct{}]{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: string(jb),
+			},
+		},
+	}, nil
 }
 
 func main() {
