@@ -120,8 +120,7 @@ func runStdioServer(cfg runConfig) error {
 	)
 
 	// Start stdio transport
-	var transport mcp.Transport
-	transport = mcp.NewStdioTransport()
+	var transport mcp.Transport = mcp.NewStdioTransport()
 	if cfg.logCommands {
 		transport = mcp.NewLoggingTransport(transport, os.Stderr)
 	}
@@ -133,7 +132,7 @@ func runStdioServer(cfg runConfig) error {
 // ListTargetArgs defines the input arguments for list_target tool (empty in this case)
 type ListTargetArgs struct{}
 
-func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[ListTargetArgs]) (*mcp.CallToolResultFor[struct{}], error) {
+func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, _ *mcp.ServerSession, _ *mcp.CallToolParamsFor[ListTargetArgs]) (*mcp.CallToolResultFor[struct{}], error) {
 	targets, err := mms.client.ListTarget(ctx)
 	if err != nil {
 		mms.logger.Warn("failed to list targets", slog.String("error", err.Error()))
