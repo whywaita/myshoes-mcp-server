@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/goccy/go-json v0.10.5
-	github.com/modelcontextprotocol/go-sdk v0.0.0-20250627194314-8a3f272dbbcf
+	github.com/modelcontextprotocol/go-sdk v0.1.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/whywaita/myshoes v1.18.2
