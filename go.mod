@@ -7,7 +7,7 @@ require (
 	github.com/modelcontextprotocol/go-sdk v0.1.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	github.com/whywaita/myshoes v1.18.2
+	github.com/whywaita/myshoes v1.18.3
 )
 
 require (
@@ -27,7 +27,6 @@ require (
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/m4ns0ur/httpcache v0.0.0-20200426190423-1040e2e8823f // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -35,9 +34,9 @@ require (
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/prometheus/client_golang v1.20.5 // indirect
+	github.com/prometheus/client_golang v1.22.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.60.1 // indirect
+	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/r3labs/diff/v2 v2.15.1 // indirect
 	github.com/sagikazarmark/locafero v0.9.0 // indirect
