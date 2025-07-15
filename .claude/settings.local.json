@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "Bash(./myshoes-mcp-server --version)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr checkout:*)",
+      "Bash(gh api:*)",
+      "Bash(make:*)"
+    ],
+    "deny": []
+  }
+}

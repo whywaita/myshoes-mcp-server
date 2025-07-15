@@ -112,12 +112,16 @@ func runStdioServer(cfg runConfig) error {
 	}
 
 	// Create MCP server using the official SDK
-	myshoesServer := mcp.NewServer("myshoes-mcp-server", "1.0.0", nil)
+	myshoesServer := mcp.NewServer(&mcp.Implementation{
+		Name:    "myshoes-mcp-server",
+		Version: "1.0.0",
+	}, nil)
 
 	// Add the list_target tool
-	myshoesServer.AddTools(
-		mcp.NewServerTool("list_target", "List target from myshoes API", mms.listTargetHandler),
-	)
+	mcp.AddTool(myshoesServer, &mcp.Tool{
+		Name:        "list_target",
+		Description: "List target from myshoes API",
+	}, mms.listTargetHandler)
 
 	// Start stdio transport
 	var transport mcp.Transport = mcp.NewStdioTransport()
