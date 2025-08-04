@@ -7,7 +7,7 @@ require (
 	github.com/modelcontextprotocol/go-sdk v0.2.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
-	github.com/whywaita/myshoes v1.18.3
+	github.com/whywaita/myshoes v1.18.5
 )
 
 require (
