@@ -124,9 +124,12 @@ func runStdioServer(cfg runConfig) error {
 	}, mms.listTargetHandler))
 
 	// Start stdio transport
-	var transport mcp.Transport = mcp.NewStdioTransport()
+	var transport mcp.Transport = &mcp.StdioTransport{}
 	if cfg.logCommands {
-		transport = mcp.NewLoggingTransport(transport, os.Stderr)
+		transport = &mcp.LoggingTransport{
+			Transport: transport,
+			Writer:    os.Stderr,
+		}
 	}
 
 	// Run the server
