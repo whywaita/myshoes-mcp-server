@@ -118,10 +118,10 @@ func runStdioServer(cfg runConfig) error {
 	}, nil)
 
 	// Add the list_target tool
-	myshoesServer.AddTool(mcp.ToolFor(&mcp.Tool{
+	myshoesServer.AddTool(&mcp.Tool{
 		Name:        "list_target",
 		Description: "List target from myshoes API",
-	}, mms.listTargetHandler))
+	}, mms.listTargetHandler)
 
 	// Start stdio transport
 	var transport mcp.Transport = &mcp.StdioTransport{}
@@ -136,20 +136,17 @@ func runStdioServer(cfg runConfig) error {
 	return myshoesServer.Run(context.Background(), transport)
 }
 
-// ListTargetArgs defines the input arguments for list_target tool (empty in this case)
-type ListTargetArgs struct{}
-
-func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req *mcp.CallToolRequest, _ ListTargetArgs) (*mcp.CallToolResult, struct{}, error) {
+func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	targets, err := mms.client.ListTarget(ctx)
 	if err != nil {
 		mms.logger.Warn("failed to list targets", slog.String("error", err.Error()))
-		return nil, struct{}{}, fmt.Errorf("failed to list targets: %w", err)
+		return nil, fmt.Errorf("failed to list targets: %w", err)
 	}
 
 	jb, err := json.Marshal(targets)
 	if err != nil {
 		mms.logger.Warn("failed to marshal targets", slog.String("error", err.Error()))
-		return nil, struct{}{}, fmt.Errorf("failed to marshal targets: %w", err)
+		return nil, fmt.Errorf("failed to marshal targets: %w", err)
 	}
 
 	// Return the result with text content
@@ -159,7 +156,7 @@ func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req *mcp.Call
 				Text: string(jb),
 			},
 		},
-	}, struct{}{}, nil
+	}, nil
 }
 
 func main() {
