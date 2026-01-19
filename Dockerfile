@@ -1,6 +1,6 @@
 ARG VERSION="dev"
 
-FROM golang:1.25.3 AS build
+FROM golang:1.26rc2 AS build
 # allow this step access to build arg
 ARG VERSION
 # Set the working directory
