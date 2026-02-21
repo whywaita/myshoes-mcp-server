@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/viper"
 
 	myshoesapi "github.com/whywaita/myshoes/api/myshoes"
+	"github.com/whywaita/myshoes/pkg/web"
 )
 
 var version = "dev-version"
@@ -92,6 +93,31 @@ type MyshoesMCPServer struct {
 	client *myshoesapi.Client
 }
 
+// GetTargetInput is the input parameter for get_target tool.
+type GetTargetInput struct {
+	TargetID string `json:"target_id" jsonschema:"description=The UUID of the target"`
+}
+
+// CreateTargetInput is the input parameter for create_target tool.
+type CreateTargetInput struct {
+	Scope        string `json:"scope" jsonschema:"description=Repository (:owner/:repo) or organization (:org) scope"`
+	ResourceType string `json:"resource_type" jsonschema:"description=Resource type (nano/micro/small/medium/large/xlarge/2xlarge/3xlarge/4xlarge)"`
+	ProviderURL  string `json:"provider_url,omitempty" jsonschema:"description=Provider URL (optional)"`
+	RunnerUser   string `json:"runner_user,omitempty" jsonschema:"description=Runner user (optional)"`
+}
+
+// UpdateTargetInput is the input parameter for update_target tool.
+type UpdateTargetInput struct {
+	TargetID     string `json:"target_id" jsonschema:"description=The UUID of the target to update"`
+	ResourceType string `json:"resource_type,omitempty" jsonschema:"description=Resource type (nano/micro/small/medium/large/xlarge/2xlarge/3xlarge/4xlarge)"`
+	ProviderURL  string `json:"provider_url,omitempty" jsonschema:"description=Provider URL"`
+}
+
+// DeleteTargetInput is the input parameter for delete_target tool.
+type DeleteTargetInput struct {
+	TargetID string `json:"target_id" jsonschema:"description=The UUID of the target to delete"`
+}
+
 func runStdioServer(cfg runConfig) error {
 	// Create myshoes client
 	host := viper.GetString("host")
@@ -122,6 +148,30 @@ func runStdioServer(cfg runConfig) error {
 		Name:        "list_target",
 		Description: "List target from myshoes API",
 	}, mms.listTargetHandler)
+
+	// Add the get_target tool
+	mcp.AddTool(myshoesServer, &mcp.Tool{
+		Name:        "get_target",
+		Description: "Get a target from myshoes API by ID",
+	}, mms.getTargetHandler)
+
+	// Add the create_target tool
+	mcp.AddTool(myshoesServer, &mcp.Tool{
+		Name:        "create_target",
+		Description: "Create a new target in myshoes API",
+	}, mms.createTargetHandler)
+
+	// Add the update_target tool
+	mcp.AddTool(myshoesServer, &mcp.Tool{
+		Name:        "update_target",
+		Description: "Update an existing target in myshoes API",
+	}, mms.updateTargetHandler)
+
+	// Add the delete_target tool
+	mcp.AddTool(myshoesServer, &mcp.Tool{
+		Name:        "delete_target",
+		Description: "Delete a target from myshoes API",
+	}, mms.deleteTargetHandler)
 
 	// Start stdio transport
 	var transport mcp.Transport = &mcp.StdioTransport{}
@@ -157,6 +207,115 @@ func (mms MyshoesMCPServer) listTargetHandler(ctx context.Context, req *mcp.Call
 			},
 		},
 	}, nil
+}
+
+func (mms MyshoesMCPServer) getTargetHandler(ctx context.Context, _ *mcp.CallToolRequest, input GetTargetInput) (*mcp.CallToolResult, any, error) {
+	target, err := mms.client.GetTarget(ctx, input.TargetID)
+	if err != nil {
+		mms.logger.Warn("failed to get target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to get target: %w", err)
+	}
+
+	jb, err := json.Marshal(target)
+	if err != nil {
+		mms.logger.Warn("failed to marshal target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to marshal target: %w", err)
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: string(jb),
+			},
+		},
+	}, nil, nil
+}
+
+func (mms MyshoesMCPServer) createTargetHandler(ctx context.Context, _ *mcp.CallToolRequest, input CreateTargetInput) (*mcp.CallToolResult, any, error) {
+	param := web.TargetCreateParam{}
+	param.Scope = input.Scope
+
+	quoted := fmt.Sprintf(`"%s"`, input.ResourceType)
+	if err := json.Unmarshal([]byte(quoted), &param.ResourceType); err != nil {
+		return nil, nil, fmt.Errorf("invalid resource_type %q: %w", input.ResourceType, err)
+	}
+
+	if input.ProviderURL != "" {
+		param.ProviderURL = &input.ProviderURL
+	}
+	if input.RunnerUser != "" {
+		param.RunnerUser = &input.RunnerUser
+	}
+
+	target, err := mms.client.CreateTarget(ctx, param)
+	if err != nil {
+		mms.logger.Warn("failed to create target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to create target: %w", err)
+	}
+
+	jb, err := json.Marshal(target)
+	if err != nil {
+		mms.logger.Warn("failed to marshal target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to marshal target: %w", err)
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: string(jb),
+			},
+		},
+	}, nil, nil
+}
+
+func (mms MyshoesMCPServer) updateTargetHandler(ctx context.Context, _ *mcp.CallToolRequest, input UpdateTargetInput) (*mcp.CallToolResult, any, error) {
+	param := web.TargetCreateParam{}
+
+	if input.ResourceType != "" {
+		quoted := fmt.Sprintf(`"%s"`, input.ResourceType)
+		if err := json.Unmarshal([]byte(quoted), &param.ResourceType); err != nil {
+			return nil, nil, fmt.Errorf("invalid resource_type %q: %w", input.ResourceType, err)
+		}
+	}
+
+	if input.ProviderURL != "" {
+		param.ProviderURL = &input.ProviderURL
+	}
+
+	target, err := mms.client.UpdateTarget(ctx, input.TargetID, param)
+	if err != nil {
+		mms.logger.Warn("failed to update target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to update target: %w", err)
+	}
+
+	jb, err := json.Marshal(target)
+	if err != nil {
+		mms.logger.Warn("failed to marshal target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to marshal target: %w", err)
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: string(jb),
+			},
+		},
+	}, nil, nil
+}
+
+func (mms MyshoesMCPServer) deleteTargetHandler(ctx context.Context, _ *mcp.CallToolRequest, input DeleteTargetInput) (*mcp.CallToolResult, any, error) {
+	if err := mms.client.DeleteTarget(ctx, input.TargetID); err != nil {
+		mms.logger.Warn("failed to delete target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to delete target: %w", err)
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{
+				Text: fmt.Sprintf("Successfully deleted target %s", input.TargetID),
+			},
+		},
+	}, nil, nil
 }
 
 func main() {
