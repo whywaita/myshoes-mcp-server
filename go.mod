@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/goccy/go-json v0.10.5
 	github.com/modelcontextprotocol/go-sdk v1.3.0
+	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/whywaita/myshoes v1.19.0
@@ -41,7 +42,6 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/r3labs/diff/v2 v2.15.1 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
