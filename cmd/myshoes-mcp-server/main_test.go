@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"log/slog"
@@ -17,6 +18,12 @@ import (
 	myshoesapi "github.com/whywaita/myshoes/api/myshoes"
 	"github.com/whywaita/myshoes/pkg/web"
 )
+
+func writeJSON(w http.ResponseWriter, v any) {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		panic(fmt.Sprintf("failed to encode JSON in test server: %v", err))
+	}
+}
 
 var testTargetID = uuid.NewV4().String()
 
@@ -50,24 +57,24 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 			if id != testTargetID {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNotFound)
-				json.NewEncoder(w).Encode(web.ErrorResponse{Error: "target not found"})
+				writeJSON(w, web.ErrorResponse{Error: "target not found"})
 				return
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(testTarget)
+			writeJSON(w, testTarget)
 
 		case http.MethodPost:
 			if id != testTargetID {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNotFound)
-				json.NewEncoder(w).Encode(web.ErrorResponse{Error: "target not found"})
+				writeJSON(w, web.ErrorResponse{Error: "target not found"})
 				return
 			}
 			var param map[string]any
 			if err := json.NewDecoder(r.Body).Decode(&param); err != nil {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
-				json.NewEncoder(w).Encode(web.ErrorResponse{Error: "json decode error"})
+				writeJSON(w, web.ErrorResponse{Error: "json decode error"})
 				return
 			}
 			updated := testTarget
@@ -82,13 +89,13 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 				}
 			}
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(updated)
+			writeJSON(w, updated)
 
 		case http.MethodDelete:
 			if id != testTargetID {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNotFound)
-				json.NewEncoder(w).Encode(web.ErrorResponse{Error: "target not found"})
+				writeJSON(w, web.ErrorResponse{Error: "target not found"})
 				return
 			}
 			w.WriteHeader(http.StatusNoContent)
@@ -105,7 +112,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 			// For list, return array
 			if r.Method == http.MethodGet {
 				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode([]web.UserTarget{testTarget})
+				writeJSON(w, []web.UserTarget{testTarget})
 				return
 			}
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -116,7 +123,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 		if err := json.NewDecoder(r.Body).Decode(&param); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(web.ErrorResponse{Error: "json decode error"})
+			writeJSON(w, web.ErrorResponse{Error: "json decode error"})
 			return
 		}
 
@@ -124,7 +131,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 		if scope == "" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(web.ErrorResponse{Error: "scope must be set"})
+			writeJSON(w, web.ErrorResponse{Error: "scope must be set"})
 			return
 		}
 
@@ -149,7 +156,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(created)
+		writeJSON(w, created)
 	})
 
 	ts := httptest.NewServer(mux)
