@@ -84,7 +84,7 @@ func newTestServer(t *testing.T) (*httptest.Server, *MyshoesMCPServer) {
 				}
 			}
 			if pu, ok := param["provider_url"]; ok {
-				if s, ok := pu.(string); ok && s != "" {
+				if s, ok := pu.(string); ok {
 					updated.ProviderURL = s
 				}
 			}
@@ -259,10 +259,11 @@ func TestUpdateTargetHandler(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
+		newURL := "http://new-provider.example.com"
 		input := UpdateTargetInput{
 			TargetID:     testTargetID,
 			ResourceType: "medium",
-			ProviderURL:  "http://new-provider.example.com",
+			ProviderURL:  &newURL,
 		}
 		result, _, err := mms.updateTargetHandler(ctx, &mcp.CallToolRequest{}, input)
 		if err != nil {
@@ -282,6 +283,21 @@ func TestUpdateTargetHandler(t *testing.T) {
 		}
 		if got.ProviderURL != "http://new-provider.example.com" {
 			t.Errorf("provider_url: got %q, want %q", got.ProviderURL, "http://new-provider.example.com")
+		}
+	})
+
+	t.Run("clear_provider_url", func(t *testing.T) {
+		emptyURL := ""
+		input := UpdateTargetInput{
+			TargetID:    testTargetID,
+			ProviderURL: &emptyURL,
+		}
+		result, _, err := mms.updateTargetHandler(ctx, &mcp.CallToolRequest{}, input)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(result.Content) == 0 {
+			t.Fatal("expected content in result")
 		}
 	})
 

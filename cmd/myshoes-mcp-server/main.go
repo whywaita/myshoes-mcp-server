@@ -108,9 +108,9 @@ type CreateTargetInput struct {
 
 // UpdateTargetInput is the input parameter for update_target tool.
 type UpdateTargetInput struct {
-	TargetID     string `json:"target_id" jsonschema:"description=The UUID of the target to update"`
-	ResourceType string `json:"resource_type,omitempty" jsonschema:"description=Resource type (nano/micro/small/medium/large/xlarge/2xlarge/3xlarge/4xlarge)"`
-	ProviderURL  string `json:"provider_url,omitempty" jsonschema:"description=Provider URL"`
+	TargetID     string  `json:"target_id" jsonschema:"description=The UUID of the target to update"`
+	ResourceType string  `json:"resource_type,omitempty" jsonschema:"description=Resource type (nano/micro/small/medium/large/xlarge/2xlarge/3xlarge/4xlarge)"`
+	ProviderURL  *string `json:"provider_url,omitempty" jsonschema:"description=Provider URL (set empty string to clear)"`
 }
 
 // DeleteTargetInput is the input parameter for delete_target tool.
@@ -269,7 +269,15 @@ func (mms MyshoesMCPServer) createTargetHandler(ctx context.Context, _ *mcp.Call
 }
 
 func (mms MyshoesMCPServer) updateTargetHandler(ctx context.Context, _ *mcp.CallToolRequest, input UpdateTargetInput) (*mcp.CallToolResult, any, error) {
+	// Fetch current target to preserve scope (API rejects scope changes)
+	current, err := mms.client.GetTarget(ctx, input.TargetID)
+	if err != nil {
+		mms.logger.Warn("failed to get current target", slog.String("error", err.Error()))
+		return nil, nil, fmt.Errorf("failed to get current target: %w", err)
+	}
+
 	param := web.TargetCreateParam{}
+	param.Scope = current.Scope
 
 	if input.ResourceType != "" {
 		quoted := fmt.Sprintf(`"%s"`, input.ResourceType)
@@ -278,9 +286,7 @@ func (mms MyshoesMCPServer) updateTargetHandler(ctx context.Context, _ *mcp.Call
 		}
 	}
 
-	if input.ProviderURL != "" {
-		param.ProviderURL = &input.ProviderURL
-	}
+	param.ProviderURL = input.ProviderURL
 
 	target, err := mms.client.UpdateTarget(ctx, input.TargetID, param)
 	if err != nil {
