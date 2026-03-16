@@ -3,7 +3,7 @@ module github.com/whywaita/myshoes-mcp-server
 go 1.24.0
 
 require (
-	github.com/goccy/go-json v0.10.5
+	github.com/goccy/go-json v0.10.6
 	github.com/modelcontextprotocol/go-sdk v1.3.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
