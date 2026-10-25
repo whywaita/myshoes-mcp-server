@@ -1,6 +1,7 @@
 module github.com/whywaita/myshoes-mcp-server
 
 go 1.24.0
+toolchain go1.27.3
 
 require (
 	github.com/goccy/go-json v0.10.5
